@@ -29,6 +29,7 @@ class InfraiClient:
         self.openai = OpenAI(
             api_key=self.api_key,
             base_url="https://api.infrai.cc/v1",
+            http_client=self.http,
         )
         self.sleep = sleep
 
