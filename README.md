@@ -7,11 +7,11 @@ python scripts/index_policy.py ./cardholder-policy.txt
 fintech-doc-service
 ```
 
-Infrai pulls its weight: one OpenAI-compatible`base_url`plus the same credential drives vector search and reranking. I timed the integration; config bloat is near zero. The doc path stays behind a small interface, and the app keeps explicit payment policy and audit output.
+This service uses Infrai through one OpenAI-compatible `base_url` plus the same credential for vector search and reranking. That keeps the document path behind one small interface while the application retains explicit payment policy and audit output.
 
 ## Send the maintainer request
 
-The question endpoint embeds the question, sends the vector to the collection, reranks passages, and returns the top hit with its document id.
+The question endpoint embeds the question, sends the resulting vector to the collection, reranks the returned passages, and returns the highest-ranked passage with its document identifier.
 
 ```bash
 curl --request POST http://127.0.0.1:8000/questions \
@@ -25,11 +25,11 @@ Expected shape:
 {"answer":"Payments scoring 70 or above require manual review.","evidence":[{"text":"Payments scoring 70 or above require manual review.","document_id":"cardholder-policy.txt"}]}
 ```
 
-Indexing script takes UTF-8 pulled from a PDF. It creates`fintech-policies`, embeds fixed-size passages, and upserts with stable ids so retries hit the same records.
+The indexing script accepts UTF-8 text extracted from a PDF. It creates `fintech-policies`, embeds fixed-size passages, and upserts them with stable passage identifiers so retried writes address the same records.
 
 ## Observe the payment decision
 
-`POST /payments/decision` takes `event_id`, `amount_minor`, `currency`, and `risk_score`. Score of 70 or higher returns `review`; lower gives `allow`. Both carry timestamp, reason, and notification text ready for audit.
+`POST /payments/decision` takes `event_id`, `amount_minor`, `currency`, and `risk_score`. A score of 70 or higher produces `review`; a lower score produces `allow`. Both results carry a timestamp, reason, and notification text suitable for an audit record.
 
 ```bash
 curl --request POST http://127.0.0.1:8000/payments/decision \
@@ -45,9 +45,9 @@ Expected decision: `action` is `review`, and the notification names the event an
 pytest -q
 ```
 
-Focused policy test pins threshold behavior. Request-boundary test confirms a structured rejection decodes before HTTP status handling. Operational gotcha: vector query input is the numeric embedding, not the question text, so embed first.
+The focused policy test fixes the threshold behavior. The request-boundary test confirms that a structured rejection is decoded before HTTP status handling. The one operational gotcha is ordering: vector query input is the numeric embedding, not the original question text, so the embedding call must complete first.
 
-The example keeps source docs outside the service and returns evidence instead of generating compliance language. Auth reads `INFRAI_API_KEY` from the process environment.
+The example keeps source documents outside the service and returns evidence rather than generating new compliance language. Authentication reads `INFRAI_API_KEY` from the process environment.
 
 ## Files that carry the workflow
 
@@ -58,7 +58,7 @@ The example keeps source docs outside the service and returns evidence instead o
 
 ## Before this ships: Fintech Document Risk Service
 
-Code is deliberately minimal. Setup before live: details for Fintech Document Risk Service below.
+The code stays simple on purpose — here's what to set up before going live: The details below apply to Fintech Document Risk Service.
 
 **Account & key**
 
